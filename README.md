@@ -9,6 +9,7 @@ Une application Twitter-like moderne construite avec une approche GitOps utilisa
 - **Base de données**: PostgreSQL
 - **Infrastructure**: Kubernetes avec Argo CD pour GitOps
 - **Cluster local**: K3d pour le développement
+- **CI/CD**: GitHub Actions avec déploiement automatique
 
 ## 📁 Structure du projet
 
@@ -16,6 +17,9 @@ Une application Twitter-like moderne construite avec une approche GitOps utilisa
 RAGNagna/
 ├── README.md
 ├── Makefile                    # Commandes automatisées
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml          # Pipeline CI/CD GitHub Actions
 ├── clusters/
 │   └── local/
 │       └── k3d-config.yaml    # Configuration K3d
@@ -25,16 +29,51 @@ RAGNagna/
 │   └── apps/
 │       └── ragna.yaml         # Application Argo CD
 ├── apps/
+│   ├── frontend/              # Application Next.js
+│   ├── backend/               # API Rust
 │   └── ragna/
 │       ├── base/              # Manifests de base
 │       └── overlays/
 │           ├── dev/           # Configuration développement
 │           └── prod/          # Configuration production
 ├── scripts/
-│   └── bootstrap.sh           # Script d'installation automatique
+│   ├── bootstrap.sh           # Script d'installation automatique
+│   └── setup-github-secrets.sh # Configuration CI/CD
 └── docs/
-    └── setup.md               # Documentation détaillée
+    ├── setup.md               # Documentation détaillée
+    └── ci-cd-pipeline.md      # Documentation CI/CD
 ```
+
+## 🚀 CI/CD Pipeline
+
+RAGnagna utilise un pipeline CI/CD complet avec GitHub Actions :
+
+### 🔄 Workflow automatique
+
+1. **Tests** : Vérification du code frontend et backend
+2. **Build** : Construction des images Docker
+3. **Push** : Publication vers GitHub Container Registry
+4. **Deploy** : Déploiement automatique sur Kubernetes
+
+### ⚡ Configuration rapide
+
+```bash
+# 1. Configurer les secrets GitHub
+./scripts/setup-github-secrets.sh
+
+# 2. Pousser le code
+git push origin main
+
+# 3. Le pipeline se déclenche automatiquement !
+```
+
+### 📊 Monitoring
+
+- **GitHub Actions** : Onglet Actions de votre repository
+- **Argo CD** : Interface web sur `http://localhost:8081`
+- **Application** : `http://ragna.local:8080`
+
+📖 [Documentation complète CI/CD](docs/ci-cd-pipeline.md)
 
 ## 🛠️ Installation rapide
 

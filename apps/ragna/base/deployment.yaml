@@ -2,29 +2,47 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ragna-app
+  namespace: ragna
   labels:
     app: ragna
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ragna
+      app: ragna-app
   template:
     metadata:
       labels:
-        app: ragna
+        app: ragna-app
     spec:
       containers:
-      - name: ragna-app
-        image: nginx:alpine
+      - name: frontend
+        image: ghcr.io/your-username/ragnagna/frontend:latest
         ports:
-        - containerPort: 80
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://localhost:8080"
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
             memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      - name: backend
+        image: ghcr.io/your-username/ragnagna/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:password@postgres.ragna-db.svc.cluster.local:5432/ragna"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
             cpu: "500m"
         livenessProbe:
           httpGet:
