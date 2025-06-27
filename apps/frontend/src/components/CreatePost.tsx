@@ -63,12 +63,14 @@ export default function CreatePost({
                 <button
                   type="button"
                   className="text-gray-400 hover:text-blue-500 transition-colors p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  aria-label="Ajouter une image"
                 >
                   <Image size={20} />
                 </button>
                 <button
                   type="button"
                   className="text-gray-400 hover:text-yellow-500 transition-colors p-2 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                  aria-label="Ajouter un emoji"
                 >
                   <Smile size={20} />
                 </button>
