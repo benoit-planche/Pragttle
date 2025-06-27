@@ -4,6 +4,7 @@
 CLUSTER_NAME = ragna-cluster
 ARGOCD_NAMESPACE = argocd
 RAGNA_NAMESPACE = ragna
+KUBECONFIG ?= /home/moi/.config/k3d/kubeconfig-ragna-cluster.yaml
 
 # Afficher l'aide
 help:
@@ -28,7 +29,7 @@ help:
 # Installation complète
 bootstrap:
 	@echo "🚀 Installation complète de RAGnagna..."
-	./scripts/bootstrap.sh
+	KUBECONFIG=$(KUBECONFIG) ./scripts/bootstrap.sh
 
 # Créer le cluster K3d
 cluster-create:
@@ -43,59 +44,59 @@ cluster-delete:
 # Installer Argo CD
 argocd-install:
 	@echo "🧠 Installation d'Argo CD..."
-	kubectl create namespace $(ARGOCD_NAMESPACE) --dry-run=client -o yaml | kubectl apply -f -
-	kubectl apply -n $(ARGOCD_NAMESPACE) -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+	kubectl --kubeconfig=$(KUBECONFIG) create namespace $(ARGOCD_NAMESPACE) --dry-run=client -o yaml | kubectl --kubeconfig=$(KUBECONFIG) apply -f -
+	kubectl --kubeconfig=$(KUBECONFIG) apply -n $(ARGOCD_NAMESPACE) -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 	@echo "⏳ Attente que les pods soient prêts..."
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n $(ARGOCD_NAMESPACE) --timeout=300s
+	kubectl --kubeconfig=$(KUBECONFIG) wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n $(ARGOCD_NAMESPACE) --timeout=300s
 	@echo "✅ Argo CD installé !"
 	@echo "🔑 Mot de passe:"
-	@kubectl -n $(ARGOCD_NAMESPACE) get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+	@kubectl --kubeconfig=$(KUBECONFIG) -n $(ARGOCD_NAMESPACE) get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
 # Exposer l'UI Argo CD
 argocd-port-forward:
 	@echo "🌐 Exposition de l'UI Argo CD sur https://localhost:8081"
-	kubectl port-forward svc/argocd-server -n $(ARGOCD_NAMESPACE) 8081:443
+	kubectl --kubeconfig=$(KUBECONFIG) port-forward svc/argocd-server -n $(ARGOCD_NAMESPACE) 8081:443
 
 # Déployer l'application
 deploy:
 	@echo "📦 Déploiement de l'application RAGnagna..."
-	kubectl apply -f argo/apps/ragna.yaml -n $(ARGOCD_NAMESPACE)
+	kubectl --kubeconfig=$(KUBECONFIG) apply -f argo/apps/ragna.yaml -n $(ARGOCD_NAMESPACE)
 	@echo "✅ Application déployée !"
 
 # Afficher le statut
 status:
 	@echo "📊 Statut du cluster:"
-	kubectl get nodes
+	kubectl --kubeconfig=$(KUBECONFIG) get nodes
 	@echo ""
 	@echo "📊 Statut d'Argo CD:"
-	kubectl get pods -n $(ARGOCD_NAMESPACE)
+	kubectl --kubeconfig=$(KUBECONFIG) get pods -n $(ARGOCD_NAMESPACE)
 	@echo ""
 	@echo "📊 Applications Argo CD:"
-	kubectl get applications -n $(ARGOCD_NAMESPACE)
+	kubectl --kubeconfig=$(KUBECONFIG) get applications -n $(ARGOCD_NAMESPACE)
 	@echo ""
 	@echo "📊 Statut de RAGnagna:"
-	kubectl get pods -n $(RAGNA_NAMESPACE) 2>/dev/null || echo "Namespace $(RAGNA_NAMESPACE) n'existe pas encore"
+	kubectl --kubeconfig=$(KUBECONFIG) get pods -n $(RAGNA_NAMESPACE) 2>/dev/null || echo "Namespace $(RAGNA_NAMESPACE) n'existe pas encore"
 
 # Afficher les logs
 logs:
 	@echo "📝 Logs de l'application RAGnagna:"
-	kubectl logs -f deployment/ragna-app -n $(RAGNA_NAMESPACE)
+	kubectl --kubeconfig=$(KUBECONFIG) logs -f deployment/ragna-app -n $(RAGNA_NAMESPACE)
 
 # Nettoyer
 clean:
 	@echo "🧹 Nettoyage des ressources..."
-	kubectl delete application ragna -n $(ARGOCD_NAMESPACE) --ignore-not-found=true
-	kubectl delete namespace $(RAGNA_NAMESPACE) --ignore-not-found=true
-	kubectl delete namespace $(ARGOCD_NAMESPACE) --ignore-not-found=true
+	kubectl --kubeconfig=$(KUBECONFIG) delete application ragna -n $(ARGOCD_NAMESPACE) --ignore-not-found=true
+	kubectl --kubeconfig=$(KUBECONFIG) delete namespace $(RAGNA_NAMESPACE) --ignore-not-found=true
+	kubectl --kubeconfig=$(KUBECONFIG) delete namespace $(ARGOCD_NAMESPACE) --ignore-not-found=true
 	k3d cluster delete $(CLUSTER_NAME) --ignore-not-found=true
 	@echo "✅ Nettoyage terminé !"
 
 # Installer NGINX Ingress Controller
 install-ingress:
 	@echo "🌐 Installation de NGINX Ingress Controller..."
-	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
+	kubectl --kubeconfig=$(KUBECONFIG) apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
 	@echo "⏳ Attente que l'Ingress Controller soit prêt..."
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx --timeout=300s
+	kubectl --kubeconfig=$(KUBECONFIG) wait --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx --timeout=300s
 	@echo "✅ NGINX Ingress Controller installé !"
 
 # Configurer l'entrée hosts
