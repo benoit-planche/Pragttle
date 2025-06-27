@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-username/RAGNagna.git
+    repoURL: https://github.com/benoit-planche/RAGNagna.git
     targetRevision: HEAD
     path: apps/database/postgres
   destination:
