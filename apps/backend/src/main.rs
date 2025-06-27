@@ -33,7 +33,7 @@ async fn main() {
         .route("/api/posts", post(routes::posts::create_post));
 
     // Run it
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
     tracing::info!("🚀 RAGnagna Backend starting on {}", addr);
     
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
