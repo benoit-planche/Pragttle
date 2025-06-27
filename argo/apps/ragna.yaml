@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/benoit-planche/RAGNagna
     targetRevision: HEAD
-    path: apps/ragna/overlays/dev
+    path: apps/ragna/base
   destination:
     server: https://kubernetes.default.svc
     namespace: ragna

@@ -15,9 +15,11 @@ spec:
       labels:
         app: ragna-app
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: frontend
-        image: ghcr.io/your-username/ragnagna/frontend:latest
+        image: ghcr.io/benoit-planche/ragnagna/frontend:latest
         ports:
         - containerPort: 3000
         env:
@@ -31,7 +33,7 @@ spec:
             memory: "256Mi"
             cpu: "200m"
       - name: backend
-        image: ghcr.io/your-username/ragnagna/backend:latest
+        image: ghcr.io/benoit-planche/ragnagna/backend:latest
         ports:
         - containerPort: 8080
         env:

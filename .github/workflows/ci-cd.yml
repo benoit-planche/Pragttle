@@ -76,23 +76,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-
     - name: Build and push frontend image
       uses: docker/build-push-action@v5
       with:
         context: ./apps/frontend
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -101,16 +92,18 @@ jobs:
       with:
         context: ./apps/backend
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
     - name: Update deployment manifests
       run: |
         # Update frontend image
-        sed -i "s|image: ragna-frontend:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
+        sed -i "s|image: .*/frontend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
         # Update backend image
-        sed -i "s|image: ragna-backend:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
+        sed -i "s|image: .*/backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
 
     - name: Commit and push changes
       run: |
@@ -120,50 +113,17 @@ jobs:
         git commit -m "Update images to ${{ github.sha }}" || exit 0
         git push
 
-  deploy:
+  notify:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    - name: Setup K3d
+    - name: Notify deployment
       run: |
-        wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-        k3d version
-
-    - name: Create K3d cluster
-      run: |
-        k3d cluster create ragna-cluster --config clusters/local/k3d-config.yaml
-
-    - name: Install Argo CD
-      run: |
-        kubectl create namespace argocd
-        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
-
-    - name: Deploy applications
-      run: |
-        # Deploy PostgreSQL
-        kubectl apply -f argo/apps/postgres.yaml
-        # Deploy RAGnagna
-        kubectl apply -f argo/apps/ragna.yaml
-        # Wait for deployments
-        kubectl wait --for=condition=available deployment/ragna-app -n ragna --timeout=300s
-
-    - name: Verify deployment
-      run: |
-        kubectl get pods -n ragna
-        kubectl get pods -n ragna-db
-        kubectl get applications -n argocd
-
-    - name: Cleanup K3d cluster
-      if: always()
-      run: |
-        k3d cluster delete ragna-cluster 
+        echo "🎉 Images built and pushed successfully!"
+        echo "📦 Frontend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}"
+        echo "📦 Backend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}"
+        echo ""
+        echo "🔄 Argo CD will automatically sync and deploy the new images"
+        echo "📊 Check Argo CD UI: http://localhost:8081"
+        echo "🌐 Access application: http://ragna.local:8080" 

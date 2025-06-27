@@ -1,4 +1,4 @@
-.PHONY: help bootstrap cluster-create cluster-delete argocd-install argocd-port-forward deploy clean
+.PHONY: help bootstrap cluster-create cluster-delete argocd-install argocd-port-forward deploy clean ci-cd-setup ci-cd-start
 
 # Variables
 CLUSTER_NAME = ragna-cluster
@@ -17,6 +17,11 @@ help:
 	@echo "  argocd-install     - Installer Argo CD"
 	@echo "  deploy             - Déployer l'application RAGnagna"
 	@echo ""
+	@echo "🚀 CI/CD:"
+	@echo "  ci-cd-setup        - Configurer les secrets GitHub pour CI/CD"
+	@echo "  ci-cd-start        - Démarrage complet CI/CD (cluster + Argo CD + secrets)"
+	@echo "  ci-cd-registry     - Configurer le registry GitHub pour Argo CD"
+	@echo ""
 	@echo "🔧 Gestion:"
 	@echo "  cluster-delete     - Supprimer le cluster K3d"
 	@echo "  argocd-port-forward - Exposer l'UI Argo CD"
@@ -30,6 +35,21 @@ help:
 bootstrap:
 	@echo "🚀 Installation complète de RAGnagna..."
 	KUBECONFIG=$(KUBECONFIG) ./scripts/bootstrap.sh
+
+# Configuration CI/CD
+ci-cd-setup:
+	@echo "🔧 Configuration des secrets GitHub pour CI/CD..."
+	./scripts/setup-github-secrets.sh
+
+# Démarrage complet CI/CD
+ci-cd-start:
+	@echo "🚀 Démarrage complet de la CI/CD..."
+	./scripts/start-ci-cd.sh
+
+# Configuration du registry GitHub
+ci-cd-registry:
+	@echo "🔧 Configuration du registry GitHub pour Argo CD..."
+	./scripts/configure-argocd-registry.sh
 
 # Créer le cluster K3d
 cluster-create:
