@@ -4,6 +4,7 @@ export interface Post {
   id: string;
   content: string;
   author: {
+    name: string;
     username: string;
     avatar?: string;
   };
