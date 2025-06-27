@@ -29,7 +29,7 @@ export default function FeedPage() {
           id: "1",
           content:
             "🧠🔥 Bienvenue sur RAGnagna ! Le futur des réseaux sociaux est enfin arrivé. Partagez vos pensées, connectez-vous avec le monde, et découvrez des contenus qui vous inspirent.",
-          author: { username: "ragna_admin" },
+          author: { name: "RAGnagna Admin", username: "ragna_admin" },
           likes: 42,
           comments: 7,
           createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
@@ -38,7 +38,7 @@ export default function FeedPage() {
           id: "2",
           content:
             "Juste en train de tester cette nouvelle plateforme. L'interface est vraiment intuitive et moderne ! 🚀",
-          author: { username: "test_user" },
+          author: { name: "Test User", username: "test_user" },
           likes: 15,
           comments: 3,
           createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
@@ -47,7 +47,7 @@ export default function FeedPage() {
           id: "3",
           content:
             "Les fonctionnalités de cette plateforme sont incroyables. J'adore la façon dont on peut partager nos idées de manière si fluide. Bravo à l'équipe ! 👏",
-          author: { username: "early_adopter" },
+          author: { name: "Early Adopter", username: "early_adopter" },
           likes: 28,
           comments: 5,
           createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
@@ -68,7 +68,7 @@ export default function FeedPage() {
       const fallbackPost: Post = {
         id: Date.now().toString(),
         content,
-        author: { username: "current_user" },
+        author: { name: "Current User", username: "current_user" },
         likes: 0,
         comments: 0,
         createdAt: new Date().toISOString(),
