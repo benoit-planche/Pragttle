@@ -1,38 +1,99 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ragna-app
+  name: ragna-frontend
+  labels:
+    app: ragna
+    component: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: ragna
+      component: frontend
   template:
     metadata:
       labels:
         app: ragna
+        component: frontend
     spec:
       containers:
       - name: ragna-frontend
-        image: nginx:alpine
+        image: ragna-frontend:latest
         ports:
-        - containerPort: 80
+        - containerPort: 3000
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://ragna-backend.ragna.svc.cluster.local:4000"
         livenessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ragna-backend
+  labels:
+    app: ragna
+    component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ragna
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: ragna
+        component: backend
+    spec:
+      containers:
+      - name: ragna-backend
+        image: ragna-backend:latest
+        ports:
+        - containerPort: 4000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:ragna123@postgres-postgresql.ragna-db.svc.cluster.local:5432/ragna"
+        - name: JWT_SECRET
+          value: "your-super-secret-jwt-key-change-in-production"
+        - name: RUST_LOG
+          value: "info"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
           initialDelaySeconds: 5
           periodSeconds: 5 

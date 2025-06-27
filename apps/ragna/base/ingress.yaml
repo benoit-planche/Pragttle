@@ -4,6 +4,7 @@ metadata:
   name: ragna-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
@@ -14,6 +15,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: ragna-service
+            name: ragna-frontend-service
             port:
               number: 80 

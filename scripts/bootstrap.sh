@@ -89,6 +89,13 @@ get_argocd_password() {
     echo "Conservez ce mot de passe pour vous connecter à l'UI"
 }
 
+# Installer Postgres
+install_postgres() {
+    log_info "Installation de Postgres..."
+    
+    kubectl apply -f argo/apps/postgres.yaml -n argocd
+}
+
 # Installer NGINX Ingress Controller
 install_ingress() {
     log_info "Installation de NGINX Ingress Controller..."
@@ -153,6 +160,7 @@ main() {
     create_cluster
     install_argocd
     get_argocd_password
+    install_postgres
     install_ingress
     setup_hosts
     deploy_ragna

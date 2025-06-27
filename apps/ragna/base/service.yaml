@@ -1,12 +1,33 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ragna-service
+  name: ragna-frontend-service
+  labels:
+    app: ragna
+    component: frontend
 spec:
   selector:
     app: ragna
+    component: frontend
   ports:
-  - protocol: TCP
+  - name: http
     port: 80
-    targetPort: 80
+    targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragna-backend-service
+  labels:
+    app: ragna
+    component: backend
+spec:
+  selector:
+    app: ragna
+    component: backend
+  ports:
+  - name: http
+    port: 4000
+    targetPort: 4000
   type: ClusterIP 
