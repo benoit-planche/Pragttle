@@ -73,9 +73,6 @@ jobs:
       with:
         driver: docker-container
 
-    - name: Set image name
-      run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
     - name: Log in to Container Registry
       uses: docker/login-action@v3
       with:
@@ -89,8 +86,8 @@ jobs:
         context: ./apps/frontend
         push: true
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+          ghcr.io/benoit-planche/ragnagna/frontend:${{ github.sha }}
+          ghcr.io/benoit-planche/ragnagna/frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -100,17 +97,17 @@ jobs:
         context: ./apps/backend
         push: true
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+          ghcr.io/benoit-planche/ragnagna/backend:${{ github.sha }}
+          ghcr.io/benoit-planche/ragnagna/backend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
     - name: Update deployment manifests
       run: |
         # Update frontend image
-        sed -i "s|image: .*/frontend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
+        sed -i "s|image: .*/frontend:.*|image: ghcr.io/benoit-planche/ragnagna/frontend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
         # Update backend image
-        sed -i "s|image: .*/backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
+        sed -i "s|image: .*/backend:.*|image: ghcr.io/benoit-planche/ragnagna/backend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
 
     - name: Commit and push changes
       run: |
@@ -128,8 +125,8 @@ jobs:
     - name: Notify deployment
       run: |
         echo "🎉 Images built and pushed successfully!"
-        echo "📦 Frontend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}"
-        echo "📦 Backend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}"
+        echo "📦 Frontend: ghcr.io/benoit-planche/ragnagna/frontend:${{ github.sha }}"
+        echo "📦 Backend: ghcr.io/benoit-planche/ragnagna/backend:${{ github.sha }}"
         echo ""
         echo "🔄 Argo CD will automatically sync and deploy the new images"
         echo "📊 Check Argo CD UI: http://localhost:8081"
