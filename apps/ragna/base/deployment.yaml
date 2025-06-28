@@ -19,7 +19,7 @@ spec:
       - name: ghcr-secret
       containers:
       - name: frontend
-        image: ghcr.io/benoit-planche/ragnagna/frontend:latest
+        image: ghcr.io/benoit-planche/ragnagna/frontend:b9f92b35943c87bf6d778db4340773a840ad03dc
         ports:
         - containerPort: 3000
         env:
@@ -33,7 +33,7 @@ spec:
             memory: "256Mi"
             cpu: "200m"
       - name: backend
-        image: ghcr.io/benoit-planche/ragnagna/backend:latest
+        image: ghcr.io/benoit-planche/ragnagna/backend:b9f92b35943c87bf6d778db4340773a840ad03dc
         ports:
         - containerPort: 8080
         env:
