@@ -125,8 +125,8 @@ jobs:
       - name: Replace image tags in manifests
         run: |
           # Remplace les tags dans les manifests
-          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:latest|${FRONTEND_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
-          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:latest|${BACKEND_TAG}|g" apps/pragttle/base/deployment-backend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:main|${FRONTEND_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:main|${BACKEND_TAG}|g" apps/pragttle/base/deployment-backend.yaml
 
           # Affiche les modifications
           echo "Modified manifests:"
