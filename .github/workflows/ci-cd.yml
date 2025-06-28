@@ -117,39 +117,8 @@ jobs:
           # cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache
           # cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache,mode=max
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: "latest"
-
-      - name: Deploy to Kubernetes
-        run: |
-          # Wait for Argo CD to be ready
-          kubectl wait --for=condition=Ready pods -n argocd --all --timeout=300s
-
-          # Apply the application
-          kubectl apply -f argo/apps/pragttle.yaml
-
-          # Wait for the application to be created and synced
-          kubectl wait --for=condition=Available application/pragttle -n argocd --timeout=60s
-
-          # Wait for sync to complete (check sync status)
-          kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/pragttle -n argocd --timeout=300s
-
-          # Wait for deployments to be ready
-          kubectl wait --for=condition=Available deployment/pragttle-frontend -n pragttle --timeout=300s
-          kubectl wait --for=condition=Available deployment/pragttle-backend -n pragttle --timeout=300s
-
   notify:
-    needs: [build-and-push, deploy]
+    needs: build-and-push
     runs-on: ubuntu-latest
     if: always()
 
