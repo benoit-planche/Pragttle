@@ -38,7 +38,7 @@ Le frontend de Pragttle, une application de réseau social moderne construite av
 
 ## 📁 Structure du projet
 
-```
+```mermaid
 src/
 ├── app/                    # Pages Next.js (App Router)
 │   ├── page.tsx           # Page d'accueil

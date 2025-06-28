@@ -4,7 +4,7 @@ Une application de réseau social moderne construite avec une architecture micro
 
 ## 🏗️ Architecture
 
-```
+```mermaid
 Pragttle/
 ├── apps/
 │   ├── backend/          # API Rust avec Axum

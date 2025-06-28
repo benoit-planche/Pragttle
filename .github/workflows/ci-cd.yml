@@ -130,12 +130,6 @@ jobs:
         with:
           version: "latest"
 
-      - name: Setup Argo CD CLI
-        run: |
-          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-          install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-          rm argocd-linux-amd64
-
       - name: Deploy to Kubernetes
         run: |
           # Wait for Argo CD to be ready
@@ -144,10 +138,13 @@ jobs:
           # Apply the application
           kubectl apply -f argo/apps/pragttle.yaml
 
-          # Wait for sync
-          argocd app sync pragttle --timeout 300
+          # Wait for the application to be created and synced
+          kubectl wait --for=condition=Available application/pragttle -n argocd --timeout=60s
 
-          # Wait for deployment to be ready
+          # Wait for sync to complete (check sync status)
+          kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/pragttle -n argocd --timeout=300s
+
+          # Wait for deployments to be ready
           kubectl wait --for=condition=Available deployment/pragttle-frontend -n pragttle --timeout=300s
           kubectl wait --for=condition=Available deployment/pragttle-backend -n pragttle --timeout=300s
 

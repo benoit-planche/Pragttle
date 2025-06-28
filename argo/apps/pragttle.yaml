@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/benoit-planche/Pragttle
     targetRevision: HEAD
-    path: apps/pragttle
+    path: apps/pragttle/base
   destination:
     server: https://kubernetes.default.svc
     namespace: pragttle

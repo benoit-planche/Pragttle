@@ -6,43 +6,26 @@ RUN apk add --no-cache musl-dev
 
 WORKDIR /app
 
-# Copy Cargo files
-COPY Cargo.toml Cargo.lock ./
-
-# Create a dummy main.rs to build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-
-# Build dependencies
-RUN cargo build --release
-
-# Remove dummy main.rs and copy real source code
-RUN rm src/main.rs
-COPY src ./src
+# Copy the entire project
+COPY . .
 
 # Build the application
 RUN cargo build --release
 
 # Production stage
-FROM alpine:latest
+FROM debian:bullseye-slim
 
-# Install runtime dependencies and debugging tools
-RUN apk add --no-cache ca-certificates curl
-
-# Create non-root user
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/target/release/pragttle-backend /app/pragttle-backend
-
-# Set ownership
-RUN chown -R appuser:appgroup /app
-USER appuser
+RUN chmod +x /app/pragttle-backend 
 
 # Expose port
 EXPOSE 4000
 
 # Start the application with debugging
-CMD ["sh", "-c", "echo 'Starting pragttle-backend...' && ./pragttle-backend"] 
+CMD ["./pragttle-backend"]

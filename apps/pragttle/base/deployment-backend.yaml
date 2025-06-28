@@ -24,7 +24,11 @@ spec:
         - containerPort: 4000
         env:
         - name: RUST_LOG
-          value: "info"
+          value: "debug"
+        - name: DATABASE_URL
+          value: "postgresql://postgres:postgres@postgres-service:5432/pragttle"
+        - name: RUST_BACKTRACE
+          value: "1"
         resources:
           requests:
             memory: "128Mi"

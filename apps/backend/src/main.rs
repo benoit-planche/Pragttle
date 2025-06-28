@@ -3,6 +3,7 @@ use axum::{
     Router,
 };
 use std::net::SocketAddr;
+use tokio::signal;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod auth;
@@ -50,7 +51,12 @@ async fn main() {
         Ok(listener) => {
             println!("✅ Server bound to {addr}");
             tracing::info!("✅ Server bound to {addr}");
-            if let Err(e) = axum::serve(listener, app).await {
+            
+            // Start the server with graceful shutdown
+            if let Err(e) = axum::serve(listener, app)
+                .with_graceful_shutdown(shutdown_signal())
+                .await 
+            {
                 println!("❌ Server error: {e}");
                 tracing::error!("❌ Server error: {e}");
                 std::process::exit(1);
@@ -61,6 +67,39 @@ async fn main() {
             tracing::error!("❌ Failed to bind to {addr}: {e}");
             std::process::exit(1);
         }
+    }
+    
+    println!("🛑 Server shutting down gracefully...");
+    tracing::info!("🛑 Server shutting down gracefully...");
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {
+            println!("📡 Received Ctrl+C, shutting down...");
+            tracing::info!("📡 Received Ctrl+C, shutting down...");
+        },
+        _ = terminate => {
+            println!("📡 Received SIGTERM, shutting down...");
+            tracing::info!("📡 Received SIGTERM, shutting down...");
+        },
     }
 }
 
