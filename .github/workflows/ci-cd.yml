@@ -106,10 +106,8 @@ jobs:
 
     - name: Update deployment manifests
       run: |
-        # Update frontend image
-        sed -i "s|image: .*/frontend:.*|image: ghcr.io/benoit-planche/ragnagna/frontend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
-        # Update backend image
-        sed -i "s|image: .*/backend:.*|image: ghcr.io/benoit-planche/ragnagna/backend:${{ github.sha }}|g" apps/ragna/base/deployment.yaml
+        sed -i "s|image: .*/frontend:.*|image: ghcr.io/benoit-planche/ragnagna/frontend:${{ github.sha }}|g" apps/ragna/base/deployment-frontend.yaml
+        sed -i "s|image: .*/backend:.*|image: ghcr.io/benoit-planche/ragnagna/backend:${{ github.sha }}|g" apps/ragna/base/deployment-backend.yaml
 
     - name: Commit and push changes
       run: |
