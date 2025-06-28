@@ -45,9 +45,20 @@ export default function ExplorePage() {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Explorer
-            </h1>
+          <div className="relative">
+                  <Link href="/" className="relative bg-white dark:bg-gray-800 shadow-2xl flex items-center space-x-3 hover:shadow-3xl transition-all duration-200">
+                    <Image
+                      src="/pragttle.png"
+                      alt="Pragttle Logo"
+                      width={100}
+                      height={30}
+                      className="h-10 w-auto"
+                    />
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Pragttle
+                    </span>
+                  </Link>
+                </div>
             <Link
               href="/feed"
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
