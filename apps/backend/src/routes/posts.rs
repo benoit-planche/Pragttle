@@ -54,7 +54,7 @@ pub async fn create_post(
     Json(payload): Json<CreatePostRequest>,
 ) -> Result<Json<CreatePostResponse>, StatusCode> {
     // Validate the request
-    if let Err(_) = payload.validate() {
+    if payload.validate().is_err() {
         return Err(StatusCode::BAD_REQUEST);
     }
 

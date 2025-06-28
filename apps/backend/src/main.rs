@@ -43,22 +43,22 @@ async fn main() {
 
     // Run it
     let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
-    println!("🌐 Binding to {}", addr);
-    tracing::info!("🚀 Pragttle Backend starting on {}", addr);
+    println!("🌐 Binding to {addr}");
+    tracing::info!("🚀 Pragttle Backend starting on {addr}");
     
     match tokio::net::TcpListener::bind(addr).await {
         Ok(listener) => {
-            println!("✅ Server bound to {}", addr);
-            tracing::info!("✅ Server bound to {}", addr);
+            println!("✅ Server bound to {addr}");
+            tracing::info!("✅ Server bound to {addr}");
             if let Err(e) = axum::serve(listener, app).await {
-                println!("❌ Server error: {}", e);
-                tracing::error!("❌ Server error: {}", e);
+                println!("❌ Server error: {e}");
+                tracing::error!("❌ Server error: {e}");
                 std::process::exit(1);
             }
         }
         Err(e) => {
-            println!("❌ Failed to bind to {}: {}", addr, e);
-            tracing::error!("❌ Failed to bind to {}: {}", addr, e);
+            println!("❌ Failed to bind to {addr}: {e}");
+            tracing::error!("❌ Failed to bind to {addr}: {e}");
             std::process::exit(1);
         }
     }

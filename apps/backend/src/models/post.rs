@@ -47,5 +47,6 @@ pub struct PostListResponse {
 pub struct GetPostsQuery {
     pub page: Option<i32>,
     pub per_page: Option<i32>,
+    #[allow(dead_code)]
     pub author_id: Option<Uuid>,
 }

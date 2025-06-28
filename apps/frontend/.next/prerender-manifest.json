@@ -30,6 +30,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/feed": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "Next-Action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/feed",
+      "dataRoute": "/feed.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/explore": {
       "experimentalBypassFor": [
         {
@@ -77,37 +101,13 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
-    },
-    "/feed": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "Next-Action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/feed",
-      "dataRoute": "/feed.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
     }
   },
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "78e2aa23a16200c561a14e372c5d2d68",
-    "previewModeSigningKey": "711919de4777f09011d1aaedf02185dd6f91ec2a28d58aba55c7ff270156dbb7",
-    "previewModeEncryptionKey": "3dc2a7eb537d17785ddb1acd34ac69e01bd6761fdc06b2668533cba381beecca"
+    "previewModeId": "46e5bb2a4de15618ae8c97ce17936b20",
+    "previewModeSigningKey": "e2abbac6c6fb8d725ebac42b790c5c80774ae4d8612cf8e063e57d43aaa54f44",
+    "previewModeEncryptionKey": "2f4e343cc9c1af9e4f73d23b2f04a192d8efb85992ed7929119c317c1fe60b1c"
   }
 }

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search, TrendingUp, Hash, Users } from "lucide-react";
-import Navigation from "@/components/Navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 const trendingTopics = [
   { id: 1, name: "#Pragttle", posts: 1234, trending: true },
@@ -151,9 +150,11 @@ export default function ExplorePage() {
               <div className="p-6 space-y-4">
                 {suggestedUsers.map((user) => (
                   <div key={user.id} className="flex items-center space-x-3">
-                    <img
+                    <Image
                       src={user.avatar}
                       alt={user.name}
+                      width={40}
+                      height={40}
                       className="h-10 w-10 rounded-full"
                     />
                     <div className="flex-1 min-w-0">
@@ -180,7 +181,7 @@ export default function ExplorePage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">
-                    Posts aujourd'hui
+                    Posts aujourd&apos;hui
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     1,234
@@ -207,9 +208,6 @@ export default function ExplorePage() {
           </div>
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      <Navigation />
     </div>
   );
 }
