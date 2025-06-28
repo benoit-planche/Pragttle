@@ -5,34 +5,52 @@ describe("Home Page", () => {
   it("renders Pragttle title in header", () => {
     render(<Home />);
 
-    // Vérifie qu'au moins un h1 contient Pragttle
-    const headings = screen.getAllByRole("heading", { level: 1 });
-    expect(headings.some((h) => h.textContent?.match(/Pragttle/i))).toBe(true);
+    // Vérifie que le titre Pragttle est présent
+    expect(screen.getByText("Pragttle")).toBeInTheDocument();
   });
 
-  it("renders welcome message", () => {
+  it("renders main heading", () => {
     render(<Home />);
 
-    // Check if the welcome message is rendered
-    expect(screen.getByText(/Bienvenue sur/i)).toBeInTheDocument();
+    // Check if the main heading is rendered
+    expect(screen.getByText(/Le futur du/i)).toBeInTheDocument();
+    expect(screen.getByText(/social media/i)).toBeInTheDocument();
+  });
+
+  it("renders description", () => {
+    render(<Home />);
+
+    // Check if the description is rendered
+    expect(
+      screen.getByText(/Découvrez une plateforme sociale intelligente/i)
+    ).toBeInTheDocument();
   });
 
   it("renders navigation links", () => {
     render(<Home />);
 
-    // Check if navigation links are present (use getAllByText for multiple matches)
-    const feedLinks = screen.getAllByText(/Feed/i);
-    expect(feedLinks.length).toBeGreaterThan(0);
-
-    const exploreLinks = screen.getAllByText(/Explorer/i);
-    expect(exploreLinks.length).toBeGreaterThan(0);
+    // Check if navigation links are present
+    expect(screen.getByText("Explorer le Feed")).toBeInTheDocument();
+    expect(screen.getByText("Découvrir")).toBeInTheDocument();
   });
 
-  it("renders call to action buttons", () => {
+  it("renders features section", () => {
     render(<Home />);
 
-    // Check if CTA buttons are present
-    expect(screen.getByText(/Commencer maintenant/i)).toBeInTheDocument();
-    expect(screen.getByText(/Voir le Feed/i)).toBeInTheDocument();
+    // Check if features section is present
+    expect(screen.getByText("Pourquoi choisir Pragttle ?")).toBeInTheDocument();
+    expect(screen.getByText("IA Intelligente")).toBeInTheDocument();
+    expect(screen.getByText("Communauté Engagée")).toBeInTheDocument();
+    expect(screen.getByText("Impact Positif")).toBeInTheDocument();
+  });
+
+  it("renders call to action", () => {
+    render(<Home />);
+
+    // Check if final CTA is present
+    expect(
+      screen.getByText("Prêt à rejoindre la révolution ?")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Commencer l'aventure")).toBeInTheDocument();
   });
 });
