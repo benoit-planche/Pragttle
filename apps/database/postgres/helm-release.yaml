@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: postgres
-  namespace: ragna-db
+  namespace: pragttle-db
 spec:
   interval: 5m
   chart:
@@ -15,8 +15,8 @@ spec:
         namespace: flux-system
   values:
     auth:
-      postgresPassword: "ragna123"
-      database: "ragna"
+      postgresPassword: "pragttle123"
+      database: "pragttle"
     primary:
       persistence:
         enabled: true

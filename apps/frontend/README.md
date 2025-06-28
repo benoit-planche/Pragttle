@@ -1,6 +1,6 @@
-# 🧠🔥 RAGnagna Frontend
+# 🧠🔥 Pragttle Frontend
 
-Le frontend de RAGnagna, une application de réseau social moderne construite avec Next.js, TypeScript et Tailwind CSS.
+Le frontend de Pragttle, une application de réseau social moderne construite avec Next.js, TypeScript et Tailwind CSS.
 
 ## 🚀 Fonctionnalités
 
@@ -166,8 +166,8 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 
 ## 📄 Licence
 
-Ce projet fait partie de RAGnagna et est sous licence MIT.
+Ce projet fait partie de Pragttle et est sous licence MIT.
 
 ---
 
-**RAGnagna** - Le futur des réseaux sociaux 🧠🔥
+**Pragttle** - Le futur des réseaux sociaux 🧠🔥

@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ragna
+  name: pragttle
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/benoit-planche/RAGNagna
+    repoURL: https://github.com/benoit-planche/Pragttle
     targetRevision: HEAD
-    path: apps/ragna/base
+    path: apps/pragttle
   destination:
     server: https://kubernetes.default.svc
-    namespace: ragna
+    namespace: pragttle
   syncPolicy:
     automated:
       prune: true

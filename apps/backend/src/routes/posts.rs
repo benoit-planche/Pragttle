@@ -20,9 +20,9 @@ pub async fn get_posts(
     let mock_posts = vec![
         Post {
             id: Uuid::new_v4(),
-            content: "🧠🔥 Welcome to RAGnagna! The future of social media is here!".to_string(),
+            content: "🧠🔥 Welcome to Pragttle! The future of social media is here!".to_string(),
             author_id: Uuid::new_v4(),
-            author_username: "ragna_admin".to_string(),
+            author_username: "pragttle_admin".to_string(),
             likes_count: 42,
             comments_count: 7,
             created_at: Utc::now(),

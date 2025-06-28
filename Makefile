@@ -1,21 +1,21 @@
 .PHONY: help bootstrap cluster-create cluster-delete argocd-install argocd-port-forward deploy clean ci-cd-setup ci-cd-start
 
 # Variables
-CLUSTER_NAME = ragna-cluster
+CLUSTER_NAME = pragttle-cluster
 ARGOCD_NAMESPACE = argocd
-RAGNA_NAMESPACE = ragna
-KUBECONFIG ?= /home/moi/.config/k3d/kubeconfig-ragna-cluster.yaml
+PRAGTTLE_NAMESPACE = pragttle
+KUBECONFIG ?= /home/moi/.config/k3d/kubeconfig-pragttle-cluster.yaml
 
 # Afficher l'aide
 help:
-	@echo "🚀 RAGnagna - Commandes disponibles"
+	@echo "🚀 Pragttle - Commandes disponibles"
 	@echo "=================================="
 	@echo ""
 	@echo "📦 Installation:"
 	@echo "  bootstrap          - Installation complète automatique"
 	@echo "  cluster-create     - Créer le cluster K3d"
 	@echo "  argocd-install     - Installer Argo CD"
-	@echo "  deploy             - Déployer l'application RAGnagna"
+	@echo "  deploy             - Déployer l'application Pragttle"
 	@echo ""
 	@echo "🚀 CI/CD:"
 	@echo "  ci-cd-setup        - Configurer les secrets GitHub pour CI/CD"
@@ -33,7 +33,7 @@ help:
 
 # Installation complète
 bootstrap:
-	@echo "🚀 Installation complète de RAGnagna..."
+	@echo "🚀 Installation complète de Pragttle..."
 	KUBECONFIG=$(KUBECONFIG) ./scripts/bootstrap.sh
 
 # Configuration CI/CD
@@ -79,13 +79,19 @@ argocd-port-forward:
 
 # Déployer l'application
 deploy:
-	@echo "📦 Déploiement de l'application RAGnagna..."
-	kubectl --kubeconfig=$(KUBECONFIG) apply -f argo/apps/ragna.yaml -n $(ARGOCD_NAMESPACE)
-	@echo "✅ Application déployée !"
+	@echo "📦 Déploiement de l'application Pragttle..."
+	@echo "📦 Installation de l'application Argo CD..."
+	kubectl --kubeconfig=$(KUBECONFIG) apply -f argo/apps/pragttle.yaml -n $(ARGOCD_NAMESPACE)
+	@echo "⏳ Attente de la synchronisation..."
+	kubectl --kubeconfig=$(KUBECONFIG) wait --for=condition=Available deployment/pragttle-frontend -n $(PRAGTTLE_NAMESPACE) --timeout=300s
+	kubectl --kubeconfig=$(KUBECONFIG) wait --for=condition=Available deployment/pragttle-backend -n $(PRAGTTLE_NAMESPACE) --timeout=300s
+	@echo "🌐 Application disponible sur: http://pragttle.local"
+	@echo "✅ Déploiement terminé !"
 
 # Afficher le statut
 status:
-	@echo "📊 Statut du cluster:"
+	@echo "📊 Statut de Pragttle:"
+	@echo "🔍 Cluster:"
 	kubectl --kubeconfig=$(KUBECONFIG) get nodes
 	@echo ""
 	@echo "📊 Statut d'Argo CD:"
@@ -94,19 +100,23 @@ status:
 	@echo "📊 Applications Argo CD:"
 	kubectl --kubeconfig=$(KUBECONFIG) get applications -n $(ARGOCD_NAMESPACE)
 	@echo ""
-	@echo "📊 Statut de RAGnagna:"
-	kubectl --kubeconfig=$(KUBECONFIG) get pods -n $(RAGNA_NAMESPACE) 2>/dev/null || echo "Namespace $(RAGNA_NAMESPACE) n'existe pas encore"
+	@echo "📊 Statut de Pragttle:"
+	kubectl --kubeconfig=$(KUBECONFIG) get pods -n $(PRAGTTLE_NAMESPACE) 2>/dev/null || echo "Namespace $(PRAGTTLE_NAMESPACE) n'existe pas encore"
 
 # Afficher les logs
 logs:
-	@echo "📝 Logs de l'application RAGnagna:"
-	kubectl --kubeconfig=$(KUBECONFIG) logs -f deployment/ragna-app -n $(RAGNA_NAMESPACE)
+	@echo "📝 Logs de l'application Pragttle:"
+	@echo "🔍 Frontend:"
+	kubectl --kubeconfig=$(KUBECONFIG) logs -n $(PRAGTTLE_NAMESPACE) -l app=pragttle-frontend --tail=50
+	@echo ""
+	@echo "🔍 Backend:"
+	kubectl --kubeconfig=$(KUBECONFIG) logs -n $(PRAGTTLE_NAMESPACE) -l app=pragttle-backend --tail=50
 
 # Nettoyer
 clean:
 	@echo "🧹 Nettoyage des ressources..."
-	kubectl --kubeconfig=$(KUBECONFIG) delete application ragna -n $(ARGOCD_NAMESPACE) --ignore-not-found=true
-	kubectl --kubeconfig=$(KUBECONFIG) delete namespace $(RAGNA_NAMESPACE) --ignore-not-found=true
+	kubectl --kubeconfig=$(KUBECONFIG) delete application pragttle -n $(ARGOCD_NAMESPACE) --ignore-not-found=true
+	kubectl --kubeconfig=$(KUBECONFIG) delete namespace $(PRAGTTLE_NAMESPACE) --ignore-not-found=true
 	kubectl --kubeconfig=$(KUBECONFIG) delete namespace $(ARGOCD_NAMESPACE) --ignore-not-found=true
 	k3d cluster delete $(CLUSTER_NAME) --ignore-not-found=true
 	@echo "✅ Nettoyage terminé !"
@@ -122,8 +132,8 @@ install-ingress:
 # Configurer l'entrée hosts
 setup-hosts:
 	@echo "🔧 Configuration de l'entrée hosts..."
-	@if ! grep -q "ragna.local" /etc/hosts; then \
-		echo "127.0.0.1 ragna.local" | sudo tee -a /etc/hosts; \
+	@if ! grep -q "pragttle.local" /etc/hosts; then \
+		echo "127.0.0.1 pragttle.local" | sudo tee -a /etc/hosts; \
 		echo "✅ Entrée hosts ajoutée"; \
 	else \
 		echo "ℹ️  L'entrée hosts existe déjà"; \

@@ -13,7 +13,7 @@ mod services;
 
 #[tokio::main]
 async fn main() {
-    println!("🚀 Starting RAGnagna Backend...");
+    println!("🚀 Starting Pragttle Backend...");
     
     // Initialize tracing
     println!("📝 Initializing tracing...");
@@ -25,7 +25,7 @@ async fn main() {
         .init();
 
     println!("✅ Tracing initialized");
-    tracing::info!("🚀 Starting RAGnagna Backend...");
+    tracing::info!("🚀 Starting Pragttle Backend...");
 
     println!("🔧 Building application routes...");
     // Build our application with routes
@@ -44,7 +44,7 @@ async fn main() {
     // Run it
     let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
     println!("🌐 Binding to {}", addr);
-    tracing::info!("🚀 RAGnagna Backend starting on {}", addr);
+    tracing::info!("🚀 Pragttle Backend starting on {}", addr);
     
     match tokio::net::TcpListener::bind(addr).await {
         Ok(listener) => {
@@ -65,7 +65,7 @@ async fn main() {
 }
 
 async fn root() -> &'static str {
-    "🧠🔥 RAGnagna Backend API - Welcome to the future of social media!"
+    "🧠🔥 Pragttle Backend API - Welcome to the future of social media!"
 }
 
 async fn health() -> &'static str {

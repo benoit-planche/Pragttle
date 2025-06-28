@@ -1,202 +1,145 @@
-# 🚀 Guide de Setup - RAGnagna
+# 🚀 Guide de Setup - Pragttle
 
-Ce guide vous accompagne dans la mise en place complète de RAGnagna avec GitOps et Argo CD.
+Ce guide vous accompagne dans la mise en place complète de Pragttle avec GitOps et Argo CD.
 
 ## 📋 Prérequis
 
 ### Outils requis
 
+- **Docker** : [Installation Docker](https://docs.docker.com/get-docker/)
+- **kubectl** : [Installation kubectl](https://kubernetes.io/docs/tasks/tools/)
+- **k3d** : [Installation k3d](https://k3d.io/)
+- **argocd CLI** : [Installation Argo CD CLI](https://argo-cd.readthedocs.io/en/stable/cli_installation/)
+
+### Vérification des prérequis
+
 ```bash
-# Docker
+# Vérifier Docker
 docker --version
 
-# kubectl
+# Vérifier kubectl
 kubectl version --client
 
-# k3d
+# Vérifier k3d
 k3d version
 
-# argocd CLI
+# Vérifier argocd CLI
 argocd version --client
 ```
 
-### Installation des outils manquants
+## 🚀 Installation automatique (recommandée)
 
-#### k3d
-
-```bash
-# Linux/macOS
-wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-
-# Ou avec Homebrew
-brew install k3d
-```
-
-#### Argo CD CLI
+### Étape 1 : Cloner le repository
 
 ```bash
-# Linux
-curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-rm argocd-linux-amd64
-
-# macOS
-brew install argocd
+git clone https://github.com/benoit-planche/Pragttle.git
+cd Pragttle
 ```
 
-## 🐳 Étape 1 : Créer le cluster K3d
-
-### Option A : Avec la configuration YAML
+### Étape 2 : Exécuter le script de bootstrap
 
 ```bash
-k3d cluster create --config clusters/local/k3d-config.yaml
+chmod +x scripts/bootstrap.sh
+./scripts/bootstrap.sh
 ```
 
-### Option B : En ligne de commande
+Le script va automatiquement :
+
+- Créer un cluster K3d local
+- Installer Argo CD
+- Configurer l'ingress
+- Déployer l'application Pragttle
+
+## 🔧 Installation manuelle
+
+### Étape 1 : Créer le cluster K3d
 
 ```bash
-k3d cluster create ragna-cluster \
-  --api-port 6550 \
-  --servers 1 \
-  --agents 2 \
-  --port "8080:80@loadbalancer" \
-  --port "8443:443@loadbalancer"
+k3d cluster create pragttle-cluster --config clusters/local/k3d-config.yaml
 ```
 
-### Vérification
-
-```bash
-kubectl cluster-info
-kubectl get nodes
-```
-
-## 🧠 Étape 2 : Installer Argo CD
-
-### Créer le namespace
+### Étape 2 : Installer Argo CD
 
 ```bash
 kubectl create namespace argocd
+kubectl apply -n argocd -f argo/bootstrap/install-argo.yaml
 ```
 
-### Installer Argo CD
+### Étape 3 : Attendre qu'Argo CD soit prêt
 
 ```bash
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl wait --for=condition=Ready pods -n argocd --all --timeout=300s
 ```
 
-### Attendre que tous les pods soient prêts
+### Étape 4 : Configurer le repository
 
 ```bash
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
+argocd repo add https://github.com/your-username/Pragttle.git
 ```
 
-## 🌐 Étape 3 : Accéder à l'UI Argo CD
-
-### Port-forward
+### Étape 5 : Déployer Pragttle
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8081:443
+kubectl apply -f argo/apps/pragttle.yaml
 ```
 
-### Récupérer le mot de passe initial
+### Étape 6 : Accéder à Pragttle
 
 ```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+# Configurer l'entrée hosts
+echo "127.0.0.1 pragttle.local" | sudo tee -a /etc/hosts
+
+# Exposer Argo CD
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
-### Accès
+## 🌐 Accès aux services
 
-- URL: <https://localhost:8081>
-- Username: `admin`
-- Password: (celui récupéré ci-dessus)
+### Argo CD UI
 
-## 🔧 Étape 4 : Configurer Argo CD
+- **URL** : <https://localhost:8080>
+- **Username** : `admin`
+- **Password** : Récupérer avec la commande :
 
-### Se connecter via CLI
+  ```bash
+  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+  ```
+
+### Application Pragttle
+
+- **URL** : <http://pragttle.local>
+
+## 🔧 Configuration CI/CD
+
+### Étape 1 : Configurer les secrets GitHub
 
 ```bash
-argocd login localhost:8081 --username admin --password <password>
+./scripts/setup-github-secrets.sh
 ```
 
-### Ajouter le repository Git
+### Étape 2 : Pousser le code
 
 ```bash
-# Remplacer par votre URL de repo
-argocd repo add https://github.com/your-username/RAGNagna.git
-```
-
-## 📦 Étape 5 : Déployer RAGnagna
-
-### Appliquer l'application Argo CD
-
-```bash
-kubectl apply -f argo/apps/ragna.yaml -n argocd
-```
-
-### Vérifier le déploiement
-
-```bash
-# Via CLI
-argocd app get ragna
-
-# Via kubectl
-kubectl get applications -n argocd
-kubectl get pods -n ragna
-```
-
-## 🎯 Étape 6 : Accéder à RAGnagna
-
-### Ajouter l'entrée dans /etc/hosts
-
-```bash
-echo "127.0.0.1 ragna.local" | sudo tee -a /etc/hosts
-```
-
-### Installer NGINX Ingress Controller
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
-```
-
-### Accéder à l'application
-
-- URL: <http://ragna.local:8080>
-
-## 🔄 Workflow de développement
-
-### 1. Modifier le code
-
-```bash
-# Faire vos modifications dans apps/ragna/
 git add .
-git commit -m "feat: nouvelle fonctionnalité"
-git push
+git commit -m "Initial commit"
+git push origin main
 ```
 
-### 2. Argo CD synchronise automatiquement
+Le pipeline CI/CD se déclenchera automatiquement et déploiera l'application.
 
-- L'application se met à jour automatiquement
-- Vérifier dans l'UI Argo CD ou via CLI
+## 🎯 Commandes utiles
 
-### 3. Vérifier les logs
-
-```bash
-kubectl logs -f deployment/ragna-app -n ragna
-```
-
-## 🛠️ Commandes utiles
-
-### Cluster
+### Gestion du cluster
 
 ```bash
-# Voir les clusters
-k3d cluster list
+# Afficher le statut
+make status
 
-# Supprimer le cluster
-k3d cluster delete ragna-cluster
+# Afficher les logs
+make logs
 
-# Redémarrer le cluster
-k3d cluster start ragna-cluster
+# Nettoyer
+make clean
 ```
 
 ### Argo CD
@@ -205,55 +148,36 @@ k3d cluster start ragna-cluster
 # Lister les applications
 argocd app list
 
-# Synchroniser manuellement
-argocd app sync ragna
+# Synchroniser une application
+argocd app sync pragttle
 
-# Voir les logs
-argocd app logs ragna
-
-# Supprimer l'application
-argocd app delete ragna
-```
-
-### Kubernetes
-
-```bash
-# Voir tous les pods
-kubectl get pods -A
-
-# Voir les services
-kubectl get svc -A
-
-# Voir les ingress
-kubectl get ingress -A
-
-# Décrire une ressource
-kubectl describe pod <pod-name> -n ragna
+# Afficher le statut d'une application
+argocd app get pragttle
 ```
 
 ## 🐛 Dépannage
 
 ### Problèmes courants
 
-#### Argo CD ne démarre pas
+#### Cluster ne démarre pas
+
+```bash
+k3d cluster delete pragttle-cluster
+k3d cluster create pragttle-cluster --config clusters/local/k3d-config.yaml
+```
+
+#### Argo CD ne répond pas
 
 ```bash
 kubectl get pods -n argocd
-kubectl describe pod <pod-name> -n argocd
+kubectl logs -n argocd deployment/argocd-server
 ```
 
-#### Application en état "OutOfSync"
+#### Application en erreur
 
 ```bash
-argocd app sync ragna
-argocd app get ragna
-```
-
-#### Pods en état "Pending"
-
-```bash
-kubectl describe pod <pod-name> -n ragna
-kubectl get events -n ragna
+kubectl get pods -n pragttle
+kubectl describe pod <pod-name> -n pragttle
 ```
 
 ## 📚 Ressources
@@ -262,3 +186,7 @@ kubectl get events -n ragna
 - [Documentation K3d](https://k3d.io/)
 - [Documentation Kubernetes](https://kubernetes.io/docs/)
 - [Documentation Kustomize](https://kustomize.io/)
+
+---
+
+**Pragttle** - Infrastructure GitOps opérationnelle ! 🧠🔥

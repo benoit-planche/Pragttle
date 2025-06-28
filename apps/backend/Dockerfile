@@ -25,8 +25,8 @@ RUN cargo build --release
 # Production stage
 FROM alpine:latest
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates
+# Install runtime dependencies and debugging tools
+RUN apk add --no-cache ca-certificates curl
 
 # Create non-root user
 RUN addgroup -g 1001 -S appgroup && \
@@ -35,7 +35,7 @@ RUN addgroup -g 1001 -S appgroup && \
 WORKDIR /app
 
 # Copy binary from builder
-COPY --from=builder /app/target/release/ragna-backend /app/ragna-backend
+COPY --from=builder /app/target/release/pragttle-backend /app/pragttle-backend
 
 # Set ownership
 RUN chown -R appuser:appgroup /app
@@ -44,5 +44,5 @@ USER appuser
 # Expose port
 EXPOSE 4000
 
-# Start the application
-CMD ["./ragna-backend"] 
+# Start the application with debugging
+CMD ["sh", "-c", "echo 'Starting pragttle-backend...' && ./pragttle-backend"] 

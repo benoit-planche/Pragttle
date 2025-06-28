@@ -1,81 +1,39 @@
-# RAGnagna 🐦
+# Pragttle 🐦
 
-Une application Twitter-like moderne construite avec une approche GitOps utilisant Argo CD et K3d.
+Une application de réseau social moderne construite avec une architecture microservices et déployée avec GitOps.
 
-## 🚀 Architecture
-
-- **Frontend**: React/Next.js avec une UI moderne
-- **Backend**: API REST avec authentification
-- **Base de données**: PostgreSQL
-- **Infrastructure**: Kubernetes avec Argo CD pour GitOps
-- **Cluster local**: K3d pour le développement
-- **CI/CD**: GitHub Actions avec déploiement automatique
-
-## 📁 Structure du projet
+## 🏗️ Architecture
 
 ```
-RAGNagna/
-├── README.md
-├── Makefile                    # Commandes automatisées
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml          # Pipeline CI/CD GitHub Actions
-├── clusters/
-│   └── local/
-│       └── k3d-config.yaml    # Configuration K3d
-├── argo/
-│   ├── bootstrap/
-│   │   └── install-argo.yaml  # Installation Argo CD
-│   └── apps/
-│       └── ragna.yaml         # Application Argo CD
+Pragttle/
 ├── apps/
-│   ├── frontend/              # Application Next.js
-│   ├── backend/               # API Rust
-│   └── ragna/
-│       ├── base/              # Manifests de base
-│       └── overlays/
-│           ├── dev/           # Configuration développement
-│           └── prod/          # Configuration production
-├── scripts/
-│   ├── bootstrap.sh           # Script d'installation automatique
-│   └── setup-github-secrets.sh # Configuration CI/CD
-└── docs/
-    ├── setup.md               # Documentation détaillée
-    └── ci-cd-pipeline.md      # Documentation CI/CD
+│   ├── backend/          # API Rust avec Axum
+│   ├── frontend/         # Interface Next.js
+│   └── database/         # Configuration PostgreSQL
+├── argo/                 # Configuration Argo CD
+├── clusters/             # Configuration K3d
+└── scripts/              # Scripts d'automatisation
 ```
 
-## 🚀 CI/CD Pipeline
+## 🚀 Technologies
 
-RAGnagna utilise un pipeline CI/CD complet avec GitHub Actions :
+- **Backend** : Rust + Axum + SQLx
+- **Frontend** : Next.js + TypeScript + Tailwind CSS
+- **Base de données** : PostgreSQL
+- **Infrastructure** : Kubernetes + K3d
+- **GitOps** : Argo CD
+- **CI/CD** : GitHub Actions
 
-### 🔄 Workflow automatique
+## 📦 Pipeline CI/CD
 
-1. **Tests** : Vérification du code frontend et backend
-2. **Build** : Construction des images Docker
-3. **Push** : Publication vers GitHub Container Registry
-4. **Deploy** : Déploiement automatique sur Kubernetes
+Pragttle utilise un pipeline CI/CD complet avec GitHub Actions :
 
-### ⚡ Configuration rapide
+1. **Build** : Construction des images Docker
+2. **Test** : Tests automatisés
+3. **Push** : Publication sur GitHub Container Registry
+4. **Deploy** : Déploiement automatique via Argo CD
 
-```bash
-# 1. Configurer les secrets GitHub
-./scripts/setup-github-secrets.sh
-
-# 2. Pousser le code
-git push origin main
-
-# 3. Le pipeline se déclenche automatiquement !
-```
-
-### 📊 Monitoring
-
-- **GitHub Actions** : Onglet Actions de votre repository
-- **Argo CD** : Interface web sur `http://localhost:8081`
-- **Application** : `http://ragna.local:8080`
-
-📖 [Documentation complète CI/CD](docs/ci-cd-pipeline.md)
-
-## 🛠️ Installation rapide
+## 🛠️ Installation
 
 ### Prérequis
 
@@ -84,122 +42,88 @@ git push origin main
 - k3d
 - argocd CLI
 
-### Option 1 : Installation automatique (recommandée)
+### Démarrage rapide
 
 ```bash
-make bootstrap
-```
+# Cloner le repository
+git clone https://github.com/benoit-planche/Pragttle.git
+cd Pragttle
 
-### Option 2 : Installation manuelle
+# Installer les dépendances
+make install
 
-```bash
-# 1. Créer le cluster
-make cluster-create
+# Démarrer le cluster local
+make cluster
 
-# 2. Installer Argo CD
-make argocd-install
-
-# 3. Installer NGINX Ingress
-make install-ingress
-
-# 4. Configurer l'entrée hosts
-make setup-hosts
-
-# 5. Déployer l'application
+# Déployer l'application
 make deploy
 ```
 
-## 🎯 Commandes utiles
+## 📚 Documentation
 
-### Afficher l'aide
-
-```bash
-make help
-```
-
-### Gestion du cluster
-
-```bash
-make cluster-create    # Créer le cluster
-make cluster-delete    # Supprimer le cluster
-make status           # Afficher le statut
-```
-
-### Argo CD
-
-```bash
-make argocd-install      # Installer Argo CD
-make argocd-port-forward # Exposer l'UI
-```
-
-### Application
-
-```bash
-make deploy    # Déployer l'application
-make logs      # Afficher les logs
-make clean     # Nettoyer tout
-```
-
-## 🌐 Accès aux services
-
-### Argo CD UI
-
-- URL: <https://localhost:8081>
-- Username: `admin`
-- Password: Récupérer avec `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
-
-### RAGnagna
-
-- URL: <http://ragna.local:8080>
-
-## 🔄 Workflow de développement
-
-1. **Modifier le code** dans `apps/ragna/`
-2. **Commiter et pousser** vers Git
-3. **Argo CD synchronise automatiquement** l'application
-4. **Vérifier** avec `make status` ou l'UI Argo CD
+- [Guide de Setup](docs/setup.md)
+- [Pipeline CI/CD](docs/ci-cd-pipeline.md)
+- [Progression Frontend](docs/frontend-progress.md)
 
 ## 🎯 Fonctionnalités
 
-- [ ] Authentification utilisateur
-- [ ] Création et partage de posts
-- [ ] Système de likes et commentaires
-- [ ] Timeline personnalisée
-- [ ] Recherche de posts et utilisateurs
-- [ ] Notifications en temps réel
+- ✅ Authentification utilisateur
+- ✅ Création et affichage de posts
+- ✅ Interface responsive
+- ✅ API RESTful
+- ✅ Déploiement GitOps
 
-## 📝 Développement
+## 🔧 Développement
 
-Voir `docs/setup.md` pour les instructions détaillées de développement.
-
-## 🐛 Dépannage
-
-### Problèmes courants
-
-#### Cluster ne démarre pas
+### Backend
 
 ```bash
-make cluster-delete
-make cluster-create
+cd apps/backend
+cargo run
 ```
 
-#### Argo CD ne répond pas
+### Frontend
 
 ```bash
-make argocd-install
-make argocd-port-forward
+cd apps/frontend
+npm run dev
 ```
 
-#### Application en erreur
+## 🚀 Déploiement
+
+### Local
 
 ```bash
-make status
-make logs
+make deploy
 ```
 
-## 📚 Ressources
+### Production
 
-- [Documentation Argo CD](https://argo-cd.readthedocs.io/)
-- [Documentation K3d](https://k3d.io/)
-- [Documentation Kubernetes](https://kubernetes.io/docs/)
-- [Documentation Kustomize](https://kustomize.io/)
+```bash
+# Configurer les secrets GitHub
+./scripts/setup-github-secrets.sh
+
+# Démarrer la CI/CD
+./scripts/start-ci-cd.sh
+```
+
+## 📊 Monitoring
+
+- **Argo CD** : <http://localhost:8080>
+- **Application** : <http://localhost:3000>
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature
+3. Commiter les changements
+4. Pousser vers la branche
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+Ce projet est sous licence MIT.
+
+---
+
+**Pragttle** - Le futur des réseaux sociaux 🧠🔥

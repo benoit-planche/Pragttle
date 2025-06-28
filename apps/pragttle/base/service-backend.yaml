@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ragna-backend
-  namespace: ragna
+  name: pragttle-backend
+  namespace: pragttle
   labels:
-    app: ragna-backend
+    app: pragttle-backend
 spec:
   selector:
-    app: ragna-backend
+    app: pragttle-backend
   ports:
   - name: http
     protocol: TCP

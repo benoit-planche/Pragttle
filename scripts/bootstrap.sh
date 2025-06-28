@@ -1,171 +1,124 @@
 #!/bin/bash
 
+# Script de bootstrap pour Pragttle avec GitOps et Argo CD
 set -e
 
-echo "🚀 Bootstrap RAGnagna avec GitOps et Argo CD"
-echo "=============================================="
-
-# Couleurs pour les messages
+# Couleurs pour les logs
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Fonction pour afficher les messages
+# Fonctions de logging
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+echo "🚀 Bootstrap Pragttle avec GitOps et Argo CD"
+echo "=============================================="
+
 # Vérifier les prérequis
-check_prerequisites() {
-    log_info "Vérification des prérequis..."
-    
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker n'est pas installé"
-        exit 1
-    fi
-    
-    if ! command -v kubectl &> /dev/null; then
-        log_error "kubectl n'est pas installé"
-        exit 1
-    fi
-    
-    if ! command -v k3d &> /dev/null; then
-        log_error "k3d n'est pas installé"
-        exit 1
-    fi
-    
-    log_info "Tous les prérequis sont satisfaits"
-}
+log_info "Vérification des prérequis..."
+
+# Vérifier k3d
+if ! command -v k3d &> /dev/null; then
+    log_error "k3d n'est pas installé. Installez-le: https://k3d.io/"
+    exit 1
+fi
+
+# Vérifier kubectl
+if ! command -v kubectl &> /dev/null; then
+    log_error "kubectl n'est pas installé. Installez-le: https://kubernetes.io/docs/tasks/tools/"
+    exit 1
+fi
+
+# Vérifier argocd CLI
+if ! command -v argocd &> /dev/null; then
+    log_error "argocd CLI n'est pas installé. Installez-le: https://argo-cd.readthedocs.io/en/stable/cli_installation/"
+    exit 1
+fi
+
+log_success "Tous les prérequis sont satisfaits"
 
 # Créer le cluster K3d
-create_cluster() {
-    log_info "Création du cluster K3d..."
-    
-    if k3d cluster list | grep -q "ragna-cluster"; then
-        log_warn "Le cluster ragna-cluster existe déjà"
-        read -p "Voulez-vous le supprimer et le recréer ? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            k3d cluster delete ragna-cluster
-        else
-            log_info "Utilisation du cluster existant"
-            return
-        fi
-    fi
-    
-    k3d cluster create --config clusters/local/k3d-config.yaml
-    
-    log_info "Cluster créé avec succès"
-}
+log_info "Création du cluster K3d..."
+k3d cluster create pragttle-cluster --config clusters/local/k3d-config.yaml
+
+# Attendre que le cluster soit prêt
+log_info "Attente du démarrage du cluster..."
+kubectl wait --for=condition=Ready nodes --all --timeout=300s
+log_success "Cluster K3d créé et prêt"
 
 # Installer Argo CD
-install_argocd() {
-    log_info "Installation d'Argo CD..."
-    
-    kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-    
-    log_info "Attente que tous les pods Argo CD soient prêts..."
-    kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
-    
-    log_info "Argo CD installé avec succès"
-}
+log_info "Installation d'Argo CD..."
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -n argocd -f argo/bootstrap/install-argo.yaml
 
-# Récupérer le mot de passe Argo CD
-get_argocd_password() {
-    log_info "Récupération du mot de passe Argo CD..."
-    
-    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    echo "Mot de passe Argo CD: $ARGOCD_PASSWORD"
-    echo "Conservez ce mot de passe pour vous connecter à l'UI"
-}
-
-# Installer Postgres
-install_postgres() {
-    log_info "Installation de Postgres..."
-    
-    kubectl apply -f argo/apps/postgres.yaml -n argocd
-}
+# Attendre qu'Argo CD soit prêt
+log_info "Attente du démarrage d'Argo CD..."
+kubectl wait --for=condition=Ready pods -n argocd --all --timeout=300s
+log_success "Argo CD installé et prêt"
 
 # Installer NGINX Ingress Controller
-install_ingress() {
-    log_info "Installation de NGINX Ingress Controller..."
-    
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
-    
-    log_info "Attente que l'Ingress Controller soit prêt..."
-    kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx --timeout=300s
-    
-    log_info "NGINX Ingress Controller installé"
-}
+log_info "Installation de NGINX Ingress Controller..."
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
+
+# Attendre que l'ingress controller soit prêt
+log_info "Attente du démarrage de l'Ingress Controller..."
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=300s
+log_success "NGINX Ingress Controller installé"
 
 # Configurer l'entrée hosts
-setup_hosts() {
-    log_info "Configuration de l'entrée hosts..."
-    
-    if ! grep -q "ragna.local" /etc/hosts; then
-        echo "127.0.0.1 ragna.local" | sudo tee -a /etc/hosts
-        log_info "Entrée hosts ajoutée"
-    else
-        log_warn "L'entrée hosts existe déjà"
-    fi
-}
+log_info "Configuration de l'entrée hosts..."
+if ! grep -q "pragttle.local" /etc/hosts; then
+    echo "127.0.0.1 pragttle.local" | sudo tee -a /etc/hosts
+    log_success "Entrée hosts ajoutée"
+else
+    log_warning "Entrée hosts déjà présente"
+fi
 
-# Déployer l'application RAGnagna
-deploy_ragna() {
-    log_info "Déploiement de l'application RAGnagna..."
-    
-    kubectl apply -f argo/apps/ragna.yaml -n argocd
-    
-    log_info "Application déployée. Vérification du statut..."
-    sleep 10
-    
-    kubectl get applications -n argocd
-    kubectl get pods -n ragna
-}
+# Créer le secret pour GitHub Container Registry
+log_info "Configuration du secret pour GitHub Container Registry..."
+kubectl create secret docker-registry ghcr-secret \
+    --docker-server=ghcr.io \
+    --docker-username=benoit-planche \
+    --docker-password=ghp_xxxxxxxxxxxxxxxxxxxx \
+    --dry-run=client -o yaml | kubectl apply -f -
 
-# Afficher les informations de connexion
-show_connection_info() {
-    echo
-    echo "🎉 Installation terminée !"
-    echo "========================"
-    echo
-    echo "📊 Argo CD UI:"
-    echo "   URL: https://localhost:8081"
-    echo "   Username: admin"
-    echo "   Password: $ARGOCD_PASSWORD"
-    echo
-    echo "🌐 RAGnagna:"
-    echo "   URL: http://ragna.local:8080"
-    echo
-    echo "🔧 Commandes utiles:"
-    echo "   kubectl port-forward svc/argocd-server -n argocd 8081:443"
-    echo "   kubectl get pods -n ragna"
-    echo "   argocd app get ragna"
-    echo
-}
+# Déployer l'application Pragttle
+log_info "Déploiement de l'application Pragttle..."
+kubectl apply -f argo/apps/pragttle.yaml
 
-# Fonction principale
-main() {
-    check_prerequisites
-    create_cluster
-    install_argocd
-    get_argocd_password
-    install_postgres
-    install_ingress
-    setup_hosts
-    deploy_ragna
-    show_connection_info
-}
+# Attendre la synchronisation
+log_info "Attente de la synchronisation..."
+kubectl wait --for=condition=Available deployment/pragttle-frontend -n pragttle --timeout=300s
+kubectl wait --for=condition=Available deployment/pragttle-backend -n pragttle --timeout=300s
 
-# Exécuter le script
-main "$@" 
+log_success "Installation terminée !"
+echo ""
+echo "🌐 Pragttle:"
+echo "   - Application: http://pragttle.local"
+echo "   - Argo CD: http://localhost:8080"
+echo "   - Username: admin"
+echo "   - Password: $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)"
+echo ""
+echo "🔧 Commandes utiles:"
+echo "   - make status    # Afficher le statut"
+echo "   - make logs      # Afficher les logs"
+echo "   - make clean     # Nettoyer tout" 

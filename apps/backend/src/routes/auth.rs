@@ -42,8 +42,8 @@ pub async fn login(
         let user = UserResponse {
             id: Uuid::new_v4(),
             username: payload.username,
-            email: "admin@ragna.local".to_string(),
-            bio: Some("RAGnagna Administrator".to_string()),
+            email: "admin@pragttle.local".to_string(),
+            bio: Some("Pragttle Administrator".to_string()),
             avatar_url: None,
             created_at: Utc::now(),
         };

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Script de démarrage complet pour la CI/CD RAGnagna
+# Script de démarrage complet pour la CI/CD Pragttle
 # Ce script configure tout l'environnement nécessaire
 
 set -e
 
-echo "🚀 Démarrage de RAGnagna CI/CD"
+echo "🚀 Démarrage de Pragttle CI/CD"
 echo "=============================="
 
 # Couleurs pour les messages
@@ -153,8 +153,8 @@ echo "   URL: https://localhost:8081"
 echo "   Username: admin"
 echo "   Password: $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)"
 echo ""
-echo "🌐 Application RAGnagna:"
-echo "   URL: http://ragna.local:8080"
+echo "🌐 Application Pragttle:"
+echo "   URL: http://pragttle.local:8080"
 echo ""
 echo "🔧 Commandes utiles:"
 echo "   kubectl get pods -n ragna"
@@ -172,4 +172,39 @@ echo "   2. Construire les images Docker"
 echo "   3. Pousser vers GitHub Container Registry"
 echo "   4. Argo CD déploiera automatiquement"
 echo ""
-print_success "Configuration terminée avec succès!" 
+print_success "Configuration terminée avec succès!"
+
+# Vérifier que nous sommes sur la branche main
+if [ "$(git branch --show-current)" != "main" ]; then
+    echo "❌ Erreur: Vous devez être sur la branche main pour démarrer la CI/CD"
+    exit 1
+fi
+
+# Vérifier que le working directory est clean
+if [ -n "$(git status --porcelain)" ]; then
+    echo "❌ Erreur: Le working directory n'est pas clean. Committez vos changements d'abord."
+    exit 1
+fi
+
+# Construire les images
+echo "📦 Construction des images Docker..."
+./scripts/build-images.sh
+
+# Pousser les images vers le registry
+echo "📤 Push des images vers GitHub Container Registry..."
+docker push ghcr.io/benoit-planche/pragttle/frontend:latest
+docker push ghcr.io/benoit-planche/pragttle/backend:latest
+
+# Pousser le code
+echo "📤 Push du code vers GitHub..."
+git push origin main
+
+echo "✅ CI/CD démarrée !"
+echo ""
+echo "📊 Suivi:"
+echo "   - GitHub Actions: https://github.com/benoit-planche/Pragttle/actions"
+echo "   - Argo CD: http://localhost:8080"
+echo ""
+echo "🌐 Application Pragttle:"
+echo "   - URL: http://pragttle.local"
+echo "   - Le déploiement se fera automatiquement via Argo CD" 

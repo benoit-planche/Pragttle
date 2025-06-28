@@ -2,18 +2,21 @@
 
 set -e
 
-echo "🐳 Building RAGnagna Docker images..."
+echo "🐳 Building Pragttle Docker images..."
 
 # Build frontend image
 echo "📦 Building frontend image..."
-cd apps/frontend
-docker build -t ragna-frontend:latest .
+docker build -t ghcr.io/benoit-planche/pragttle/frontend:latest apps/frontend/
 
 # Build backend image
-echo "🦀 Building backend image..."
-cd ../backend
-docker build -t ragna-backend:latest .
+echo "📦 Building backend image..."
+docker build -t ghcr.io/benoit-planche/pragttle/backend:latest apps/backend/
 
-echo "✅ Images built successfully!"
+echo "✅ All images built successfully!"
+echo ""
+echo "📦 Images:"
+echo "   - ghcr.io/benoit-planche/pragttle/frontend:latest"
+echo "   - ghcr.io/benoit-planche/pragttle/backend:latest"
+
 echo "📋 Available images:"
-docker images | grep ragna 
+docker images | grep ghcr.io/benoit-planche/pragttle 

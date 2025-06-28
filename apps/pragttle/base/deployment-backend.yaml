@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ragna-backend
-  namespace: ragna
+  name: pragttle-backend
+  namespace: pragttle
   labels:
-    app: ragna-backend
+    app: pragttle-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ragna-backend
+      app: pragttle-backend
   template:
     metadata:
       labels:
-        app: ragna-backend
+        app: pragttle-backend
     spec:
       imagePullSecrets:
       - name: ghcr-secret
       containers:
-      - name: backend
-        image: ghcr.io/benoit-planche/ragnagna/backend:latest
+      - name: pragttle-backend
+        image: ghcr.io/benoit-planche/pragttle/backend:latest
         ports:
         - containerPort: 4000
         env:
-        - name: DATABASE_URL
-          value: "postgresql://postgres:password@postgres.ragna-db.svc.cluster.local:5432/ragna"
+        - name: RUST_LOG
+          value: "info"
         resources:
           requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
             memory: "256Mi"
             cpu: "200m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /health
