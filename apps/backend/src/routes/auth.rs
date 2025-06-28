@@ -5,7 +5,6 @@ use axum::{
 use validator::Validate;
 
 use crate::models::{AuthResponse, LoginRequest, RegisterRequest, UserResponse};
-use uuid::Uuid;
 use chrono::Utc;
 
 pub async fn register(
@@ -18,10 +17,10 @@ pub async fn register(
 
     // Mock response for now - will be replaced with database operations
     let user = UserResponse {
-        id: Uuid::new_v4(),
+        id: 1, // Mock user ID
         username: payload.username,
         email: payload.email,
-        bio: None,
+        name: payload.name,
         avatar_url: None,
         created_at: Utc::now(),
     };
@@ -40,10 +39,10 @@ pub async fn login(
     // Mock authentication for now
     if payload.username == "admin" && payload.password == "password" {
         let user = UserResponse {
-            id: Uuid::new_v4(),
+            id: 1, // Mock user ID
             username: payload.username,
             email: "admin@pragttle.local".to_string(),
-            bio: Some("Pragttle Administrator".to_string()),
+            name: "Administrator".to_string(),
             avatar_url: None,
             created_at: Utc::now(),
         };

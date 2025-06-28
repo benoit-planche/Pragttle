@@ -2,9 +2,13 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use tower_http::cors::{CorsLayer, Any};
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::signal;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use axum::http::Method;
+use axum::http::header::{CONTENT_TYPE, AUTHORIZATION};
 
 mod auth;
 mod db;
@@ -28,7 +32,34 @@ async fn main() {
     println!("✅ Tracing initialized");
     tracing::info!("🚀 Starting Pragttle Backend...");
 
+    // Initialize database
+    println!("🗄️ Initializing database connection...");
+    let database = match db::Database::new().await {
+        Ok(db) => {
+            println!("✅ Database connected successfully");
+            Arc::new(db)
+        }
+        Err(e) => {
+            println!("❌ Failed to connect to database: {e}");
+            tracing::error!("❌ Failed to connect to database: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    // Initialize services
+    println!("🔧 Initializing services...");
+    let post_service = Arc::new(services::PostService::new(database.clone()));
+    println!("✅ Services initialized");
+
     println!("🔧 Building application routes...");
+    
+    // Configure CORS
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
+        .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+        .allow_credentials(false);
+    
     // Build our application with routes
     let app = Router::new()
         .route("/", get(root))
@@ -38,7 +69,11 @@ async fn main() {
         .route("/api/auth/login", post(routes::auth::login))
         // Posts routes
         .route("/api/posts", get(routes::posts::get_posts))
-        .route("/api/posts", post(routes::posts::create_post));
+        .route("/api/posts", post(routes::posts::create_post))
+        .route("/api/posts/:id/like", post(routes::posts::like_post))
+        .route("/api/posts/:id/unlike", post(routes::posts::unlike_post))
+        .layer(cors)
+        .with_state(post_service);
 
     println!("✅ Routes built");
 
