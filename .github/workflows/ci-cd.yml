@@ -53,7 +53,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -89,9 +89,6 @@ jobs:
           labels: ${{ steps.meta-frontend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Alternative if cache fails:
-          # cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:buildcache
-          # cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:buildcache,mode=max
 
       - name: Extract metadata for backend
         id: meta-backend
@@ -113,29 +110,35 @@ jobs:
           labels: ${{ steps.meta-backend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Alternative if cache fails:
-          # cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache
-          # cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache,mode=max
 
       - name: Set image tag variable
         id: set_tag
         run: |
-          echo "IMAGE_TAG=${GITHUB_REF##*/}-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "IMAGE_TAG=${GITHUB_REF##*/}-${GITHUB_SHA::7}"
+          # Utilise le premier tag généré (sans le latest)
+          FRONTEND_TAG=$(echo "${{ steps.meta-frontend.outputs.tags }}" | tr ',' '\n' | grep -v latest | head -1)
+          BACKEND_TAG=$(echo "${{ steps.meta-backend.outputs.tags }}" | tr ',' '\n' | grep -v latest | head -1)
+          echo "FRONTEND_TAG=${FRONTEND_TAG}" >> $GITHUB_ENV
+          echo "BACKEND_TAG=${BACKEND_TAG}" >> $GITHUB_ENV
+          echo "Frontend tag: ${FRONTEND_TAG}"
+          echo "Backend tag: ${BACKEND_TAG}"
 
-      - name: Replace image tag in backend manifest
+      - name: Replace image tags in manifests
         run: |
-          sed -i "s|ghcr.io/moi/pragttle-backend:latest|ghcr.io/moi/pragttle-backend:${IMAGE_TAG}|g" apps/pragttle/base/deployment-backend.yaml
+          # Remplace les tags dans les manifests
+          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:latest|${FRONTEND_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:latest|${BACKEND_TAG}|g" apps/pragttle/base/deployment-backend.yaml
 
-      - name: Replace image tag in frontend manifest
+          # Affiche les modifications
+          echo "Modified manifests:"
+          grep "image:" apps/pragttle/base/deployment-*.yaml
+
+      - name: Commit and push updated manifests
         run: |
-          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:latest|ghcr.io/benoit-planche/pragttle/frontend:${IMAGE_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
-
-      # Exemple de déploiement (à adapter selon ta stratégie)
-      # - name: Deploy with kubectl
-      #   run: |
-      #     kubectl apply -f apps/pragttle/base/deployment-backend.yaml
-      #     kubectl apply -f apps/pragttle/base/deployment-frontend.yaml
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add apps/pragttle/base/deployment-*.yaml
+          git commit -m "Update image tags to ${FRONTEND_TAG} and ${BACKEND_TAG}" || echo "No changes to commit"
+          git push
 
   notify:
     needs: build-and-push
@@ -145,7 +148,7 @@ jobs:
     steps:
       - name: Notify deployment status
         run: |
-          echo "📦 Frontend: ghcr.io/benoit-planche/pragttle/frontend:latest"
-          echo "📦 Backend: ghcr.io/benoit-planche/pragttle/backend:latest"
+          echo "📦 Frontend: ${{ env.FRONTEND_TAG }}"
+          echo "📦 Backend: ${{ env.BACKEND_TAG }}"
           echo "🌐 Application: http://pragttle.local"
           echo "✅ Deployment completed successfully!"
