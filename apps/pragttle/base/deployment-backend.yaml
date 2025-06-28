@@ -19,7 +19,7 @@ spec:
       - name: ghcr-secret
       containers:
       - name: pragttle-backend
-        image: ghcr.io/benoit-planche/pragttle/backend:main
+        image: ghcr.io/benoit-planche/pragttle/backend:301c317
         ports:
         - containerPort: 3000
         env:
