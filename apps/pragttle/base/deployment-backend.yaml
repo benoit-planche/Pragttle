@@ -19,16 +19,16 @@ spec:
       - name: ghcr-secret
       containers:
       - name: pragttle-backend
-        image: ghcr.io/benoit-planche/pragttle/backend:latest
+        image: ghcr.io/moi/pragttle-backend:latest
         ports:
-        - containerPort: 4000
+        - containerPort: 3000
         env:
-        - name: RUST_LOG
-          value: "debug"
         - name: DATABASE_URL
-          value: "postgresql://postgres:postgres@postgres-service:5432/pragttle"
-        - name: RUST_BACKTRACE
-          value: "1"
+          value: "postgresql://postgres:pragttle123@postgres-postgresql.pragttle.svc.cluster.local:5432/pragttle"
+        - name: RUST_LOG
+          value: "info"
+        - name: PORT
+          value: "3000"
         resources:
           requests:
             memory: "128Mi"
@@ -39,12 +39,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 4000
+            port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 4000
+            port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5 

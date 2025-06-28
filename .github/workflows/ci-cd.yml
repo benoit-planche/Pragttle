@@ -117,6 +117,26 @@ jobs:
           # cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache
           # cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:buildcache,mode=max
 
+      - name: Set image tag variable
+        id: set_tag
+        run: |
+          echo "IMAGE_TAG=${GITHUB_REF##*/}-${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${GITHUB_REF##*/}-${GITHUB_SHA::7}"
+
+      - name: Replace image tag in backend manifest
+        run: |
+          sed -i "s|ghcr.io/moi/pragttle-backend:latest|ghcr.io/moi/pragttle-backend:${IMAGE_TAG}|g" apps/pragttle/base/deployment-backend.yaml
+
+      - name: Replace image tag in frontend manifest
+        run: |
+          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:latest|ghcr.io/benoit-planche/pragttle/frontend:${IMAGE_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
+
+      # Exemple de déploiement (à adapter selon ta stratégie)
+      # - name: Deploy with kubectl
+      #   run: |
+      #     kubectl apply -f apps/pragttle/base/deployment-backend.yaml
+      #     kubectl apply -f apps/pragttle/base/deployment-frontend.yaml
+
   notify:
     needs: build-and-push
     runs-on: ubuntu-latest

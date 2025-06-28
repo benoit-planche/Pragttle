@@ -1,14 +1,27 @@
-auth:
-  postgresPassword: mysecretpassword
+global:
+  postgresql:
+    auth:
+      postgresPassword: "pragttle123"
+      database: "pragttle"
+
 primary:
+  service:
+    type: ClusterIP
+    port: 5432
   persistence:
     enabled: true
-    size: 1Gi
-    storageClass: ""
+    size: 8Gi
   resources:
     requests:
-      memory: 256Mi
-      cpu: 100m
+      memory: "256Mi"
+      cpu: "250m"
     limits:
-      memory: 512Mi
-      cpu: 500m 
+      memory: "512Mi"
+      cpu: "500m"
+
+serviceAccount:
+  create: true
+  name: "postgres-postgresql"
+
+# Déployer dans le namespace pragttle
+namespaceOverride: "pragttle" 

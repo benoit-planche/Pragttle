@@ -8,21 +8,39 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: postgresql
-    targetRevision: 15.5.2
+    targetRevision: 13.2.26
     helm:
       values: |
-        auth:
-          postgresPassword: "ragna123"
-          database: "ragna"
+        global:
+          postgresql:
+            auth:
+              postgresPassword: "pragttle123"
+              database: "pragttle"
+
         primary:
+          service:
+            type: ClusterIP
+            port: 5432
           persistence:
             enabled: true
             size: 8Gi
-        service:
-          type: ClusterIP
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+        serviceAccount:
+          create: true
+          name: "postgres-postgresql"
+
+        # Déployer dans le namespace pragttle
+        namespaceOverride: "pragttle"
   destination:
     server: https://kubernetes.default.svc
-    namespace: ragna-db
+    namespace: pragttle
   syncPolicy:
     automated:
       prune: true
