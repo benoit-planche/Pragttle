@@ -21,14 +21,14 @@ spec:
       - name: pragttle-backend
         image: ghcr.io/benoit-planche/pragttle/backend:301c317
         ports:
-        - containerPort: 3000
+        - containerPort: 4000
         env:
         - name: DATABASE_URL
           value: "postgresql://postgres:pragttle123@postgres-postgresql.pragttle.svc.cluster.local:5432/pragttle"
         - name: RUST_LOG
           value: "info"
         - name: PORT
-          value: "3000"
+          value: "4000"
         resources:
           requests:
             memory: "128Mi"
@@ -39,12 +39,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 4000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 4000
           initialDelaySeconds: 5
           periodSeconds: 5 
