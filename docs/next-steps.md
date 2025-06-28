@@ -9,7 +9,7 @@ Ce document décrit les prochaines étapes pour développer l'application RAGnag
 - [ ] Créer une application React/Next.js moderne
 - [ ] Implémenter l'authentification utilisateur
 - [ ] Créer l'interface de création de posts
-- [ ] Développer la timeline des posts
+- [x] Développer la timeline des posts
 - [ ] Ajouter le système de likes et commentaires
 
 ### 1.2 Développer l'API backend
