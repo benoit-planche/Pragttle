@@ -106,7 +106,7 @@ jobs:
         with:
           context: ./apps/backend
           push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
+          tags: ghcr.io/benoit-planche/pragttle/backend:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta-backend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -114,19 +114,14 @@ jobs:
       - name: Set image tag variable
         id: set_tag
         run: |
-          # Utilise le premier tag généré (sans le latest)
-          FRONTEND_TAG=$(echo "${{ steps.meta-frontend.outputs.tags }}" | tr ',' '\n' | grep -v latest | head -1)
-          BACKEND_TAG=$(echo "${{ steps.meta-backend.outputs.tags }}" | tr ',' '\n' | grep -v latest | head -1)
-          echo "FRONTEND_TAG=${FRONTEND_TAG}" >> $GITHUB_ENV
-          echo "BACKEND_TAG=${BACKEND_TAG}" >> $GITHUB_ENV
-          echo "Frontend tag: ${FRONTEND_TAG}"
-          echo "Backend tag: ${BACKEND_TAG}"
+          IMAGE_TAG=${GITHUB_SHA::7}
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Replace image tags in manifests
         run: |
           # Remplace les tags dans les manifests
-          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:main|${FRONTEND_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
-          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:main|${BACKEND_TAG}|g" apps/pragttle/base/deployment-backend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:main|${IMAGE_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:main|${IMAGE_TAG}|g" apps/pragttle/base/deployment-backend.yaml
 
           # Affiche les modifications
           echo "Modified manifests:"
@@ -137,7 +132,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add apps/pragttle/base/deployment-*.yaml
-          git commit -m "Update image tags to ${FRONTEND_TAG} and ${BACKEND_TAG}" || echo "No changes to commit"
+          git commit -m "Update image tags to ${IMAGE_TAG}" || echo "No changes to commit"
           git push
 
   notify:
@@ -148,7 +143,7 @@ jobs:
     steps:
       - name: Notify deployment status
         run: |
-          echo "📦 Frontend: ${{ env.FRONTEND_TAG }}"
-          echo "📦 Backend: ${{ env.BACKEND_TAG }}"
+          echo " Frontend: ${{ env.IMAGE_TAG }}"
+          echo "📦 Backend: ${{ env.IMAGE_TAG }}"
           echo "🌐 Application: http://pragttle.local"
           echo "✅ Deployment completed successfully!"
