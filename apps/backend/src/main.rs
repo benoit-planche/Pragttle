@@ -21,6 +21,8 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    tracing::info!("🚀 Starting RAGnagna Backend...");
+
     // Build our application with routes
     let app = Router::new()
         .route("/", get(root))
@@ -36,8 +38,19 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
     tracing::info!("🚀 RAGnagna Backend starting on {}", addr);
     
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    match tokio::net::TcpListener::bind(addr).await {
+        Ok(listener) => {
+            tracing::info!("✅ Server bound to {}", addr);
+            if let Err(e) = axum::serve(listener, app).await {
+                tracing::error!("❌ Server error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Err(e) => {
+            tracing::error!("❌ Failed to bind to {}: {}", addr, e);
+            std::process::exit(1);
+        }
+    }
 }
 
 async fn root() -> &'static str {
