@@ -58,6 +58,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tag variable
+        id: set_tag
+        run: |
+          # Utilise le SHA court du commit comme tag unique
+          IMAGE_TAG=${GITHUB_SHA::7}
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "Image tag: $IMAGE_TAG"
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -69,59 +79,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata for frontend
-        id: meta-frontend
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./apps/frontend
           push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ env.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Extract metadata for backend
-        id: meta-backend
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./apps/backend
           push: true
-          tags: ghcr.io/benoit-planche/pragttle/backend:${{ env.IMAGE_TAG }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ env.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Set image tag variable
-        id: set_tag
+      - name: Pull latest changes
         run: |
-          IMAGE_TAG=${GITHUB_SHA::7}
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git pull origin main
 
       - name: Replace image tags in manifests
         run: |
-          # Remplace les tags dans les manifests
-          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:main|${IMAGE_TAG}|g" apps/pragttle/base/deployment-frontend.yaml
-          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:main|${IMAGE_TAG}|g" apps/pragttle/base/deployment-backend.yaml
+          # Remplace les tags dans les manifests avec le tag unique
+          sed -i "s|ghcr.io/benoit-planche/pragttle/frontend:.*|ghcr.io/benoit-planche/pragttle/frontend:${{ env.IMAGE_TAG }}|g" apps/pragttle/base/deployment-frontend.yaml
+          sed -i "s|ghcr.io/benoit-planche/pragttle/backend:.*|ghcr.io/benoit-planche/pragttle/backend:${{ env.IMAGE_TAG }}|g" apps/pragttle/base/deployment-backend.yaml
 
           # Affiche les modifications
           echo "Modified manifests:"
@@ -129,11 +115,13 @@ jobs:
 
       - name: Commit and push updated manifests
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           git add apps/pragttle/base/deployment-*.yaml
-          git commit -m "Update image tags to ${IMAGE_TAG}" || echo "No changes to commit"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update image tags to ${{ env.IMAGE_TAG }}"
+            git push origin main
+          fi
 
   notify:
     needs: build-and-push
@@ -143,7 +131,7 @@ jobs:
     steps:
       - name: Notify deployment status
         run: |
-          echo " Frontend: ${{ env.IMAGE_TAG }}"
-          echo "📦 Backend: ${{ env.IMAGE_TAG }}"
+          echo "📦 Frontend: ghcr.io/benoit-planche/pragttle/frontend:${{ env.IMAGE_TAG }}"
+          echo "📦 Backend: ghcr.io/benoit-planche/pragttle/backend:${{ env.IMAGE_TAG }}"
           echo "🌐 Application: http://pragttle.local"
           echo "✅ Deployment completed successfully!"
