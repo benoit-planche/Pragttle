@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ragna-ingress
+  namespace: ragna
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -15,6 +16,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: ragna-service
+            name: ragna-frontend
             port:
               number: 80 

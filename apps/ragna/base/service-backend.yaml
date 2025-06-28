@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragna-backend
+  namespace: ragna
+  labels:
+    app: ragna-backend
+spec:
+  selector:
+    app: ragna-backend
+  ports:
+  - name: http
+    protocol: TCP
+    port: 4000
+    targetPort: 4000
+  type: ClusterIP 
