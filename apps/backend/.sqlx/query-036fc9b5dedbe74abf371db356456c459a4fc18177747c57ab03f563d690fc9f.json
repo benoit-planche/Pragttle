@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                p.id, p.content, p.author_id, p.likes_count, p.comments_count, p.shares_count,\n                p.is_verified_by_ai, p.ai_verification_score, p.created_at, p.updated_at,\n                u.name as author_name, u.username as author_username, u.avatar_url as author_avatar_url\n            FROM posts p\n            JOIN users u ON p.author_id = u.id\n            WHERE p.id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "author_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "likes_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "comments_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "shares_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_verified_by_ai",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "ai_verification_score",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "author_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 11,
+        "name": "author_username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 12,
+        "name": "author_avatar_url",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "036fc9b5dedbe74abf371db356456c459a4fc18177747c57ab03f563d690fc9f"
+}

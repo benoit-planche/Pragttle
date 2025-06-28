@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE posts \n                SET likes_count = GREATEST(likes_count - 1, 0)\n                WHERE id = $1\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "75f228f107158084dfa270ef084b3cbfe8f2b125cfc215a69f9805f9a0b4c01c"
+}

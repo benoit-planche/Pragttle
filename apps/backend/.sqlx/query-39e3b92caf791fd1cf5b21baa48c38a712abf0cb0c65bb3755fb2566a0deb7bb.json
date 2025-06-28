@@ -1,0 +1,77 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO posts (content, author_id)\n            VALUES ($1, $2)\n            RETURNING id, content, author_id, likes_count, comments_count, shares_count, \n                      is_verified_by_ai, ai_verification_score, created_at, updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "author_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "likes_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "comments_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "shares_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_verified_by_ai",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "ai_verification_score",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "39e3b92caf791fd1cf5b21baa48c38a712abf0cb0c65bb3755fb2566a0deb7bb"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE posts \n                SET likes_count = likes_count + 1\n                WHERE id = $1\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2199b878a4d79e97fbbda8dc5efdd51a6250eba9cbdb6d892ecfa8c66537d7eb"
+}
