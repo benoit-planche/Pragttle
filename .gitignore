@@ -77,7 +77,7 @@ charts/*.tgz
 
 # Rust
 target/
-Cargo.lock
+# Cargo.lock  # Commented out - needed for reproducible builds
 **/*.rs.bk
 *.pdb
 
@@ -192,6 +192,7 @@ dist
 
 # Gatsby files
 .cache/
+# public  # Commented out - needed for Next.js build
 
 # Storybook build outputs
 .out
@@ -226,7 +227,7 @@ next-env.d.ts
 
 # Rust specific
 target/
-Cargo.lock
+# Cargo.lock  # Commented out - needed for reproducible builds
 **/*.rs.bk
 *.pdb
 
@@ -260,5 +261,4 @@ argocd-initial-admin-secret
 kubeconfig
 
 # Temporary files
-*.tmp
-*.temp 
+*.tmp 
